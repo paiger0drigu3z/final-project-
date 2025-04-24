@@ -1,0 +1,36 @@
+body {
+    background-color: lavender;
+    color: rgb(39, 39, 109); /* Dark gray font color */
+  font-family: "Segoe UI", Arial, sans-serif; /* Font family */
+}
+.container {
+    max-width: 960px; /* Set a maximum width for the content */
+    margin: 0 auto; /* Center the container horizontally */
+    padding: 20px; /* Add some padding around the content */
+  }
+  
+  .main-content {
+    padding: 15px; /* Add padding within the main content area */
+    margin-bottom: 20px; /* Add some space below the main content */
+    border: 1px solid #ccc; /* Add a light border */
+    border-radius: 5px; /* Add rounded corners */
+  }
+  
+  .sidebar {
+    background-color: #a9a3a3; /* Light gray background for the sidebar */
+    padding: 10px; /* Add padding within the sidebar */
+    border: 1px solid #af84cf; /* Add a very light border */
+    border-radius: 3px; /* Add slight rounded corners */
+  }
+  h1, h2 {
+    color: rgb(125, 99, 210); /* Example heading color */
+  }
+  
+  a {
+    color: rgb(99, 99, 107); /* Example link color */
+    text-decoration: none; /* Remove underline from links */
+  }
+  
+  a:hover {
+    text-decoration: underline; /* Add underline on hover */
+  }

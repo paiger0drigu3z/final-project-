@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Guessing Game</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            transition: background-color 0.5s ease;
+        }
+        body.dark-mode {
+            background-color: #222;
+            color: #eee;
+        }
+        #game-container {
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            text-align: center;
+            transition: background-color 0.5s ease;
+        }
+        #game-container.dark-mode {
+            background-color: #333;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(255,255,255,0.2);
+        }
+        h2 {
+            margin-bottom: 20px;
+            transition: color 0.5s ease;
+        }
+        h2.dark-mode{
+            color: #ffdb58;
+        }
+        p {
+            margin-bottom: 10px;
+            transition: color 0.5s ease;
+        }
+        p.dark-mode{
+            color: #eee;
+        }
+        input[type="number"] {
+            padding: 10px;
+            width: 80%;
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s ease, background-color 0.5s ease, color 0.5s ease;
+            background-color: #fff;
+            color: #333;
+        }
+        input[type="number"].dark-mode{
+            background-color: #444;
+            color: #eee;
+            border-color: #666;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #c0c3c5;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 5px;
+        }
+        button.dark-mode {
+            background-color: #ffdb58;
+            color: #111;
+        }
+        button:hover {
+            background-color: #c3d1e1;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        #message {
+            margin-top: 10px;
+            font-weight: bold;
+            transition: color 0.5s ease;
+            min-height: 24px; /*Reserve space to avoid layout shift*/
+        }
+        #message.dark-mode {
+            color: #ff6b6b;
+        }
+        .game-over {
+            color: red;
+        }
+        #reset-button {
+            display: none;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        #reset-button.dark-mode{
+            background-color: #4CAF50;
+            color: #111;
+        }
+        #reset-button:hover {
+            background-color: #218838;
+        }
+        #reset-button:active {
+            transform: scale(0.95);
+        }
+        .difficulty-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .difficulty-button {
+            padding: 10px 15px;
+            margin: 0 5px;
+            background-color: #e0e0e0;
+            color: #da5656;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+        }
+        .difficulty-button.dark-mode{
+            background-color: #555;
+            color: #eee;
+        }
+        .difficulty-button:hover {
+            background-color: #ccc;
+        }
+        .difficulty-button:active {
+            transform: scale(0.95);
+        }
+        .difficulty-button.selected {
+            background-color: #d5dde7;
+            color: #ce4d4d;
+        }
+        .difficulty-button.selected.dark-mode{
+            background-color: #ffdb58;
+            color: #111;
+        }
+        #toggle-dark-mode {
+            position: fixed; /* Fix button to the corner */
+            top: 10px;
+            right: 10px;
+            padding: 8px 16px;
+            background-color: #222;
+            color: #eee;
+            border: 2px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            font-size: 0.8em;
+            z-index: 1000; /* Ensure it's above other elements */
+        }
+
+        #toggle-dark-mode:hover {
+            background-color: #eee;
+            color: #222;
+            border-color: #222;
+        }
+        #toggle-dark-mode.dark-mode {
+            background-color: #eee;
+            color: #222;
+            border-color: #222;
+        }
+        #toggle-dark-mode.dark-mode:hover {
+            background-color: #222;
+            color: #eee;
+            border-color: #eee;
+        }
+        #feedback-container {
+            margin-top: 20px;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+        }
+        #feedback-container.show {
+            opacity: 1;
+            height: auto;
+        }
+
+        #feedback-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            transition: background-color 0.5s ease;
+        }
+        #feedback-form.dark-mode{
+            background-color: #444;
+        }
+
+        #feedback-form label {
+            margin-bottom: 5px;
+            width: 90%;
+            max-width: 300px;
+            text-align: left;
+            transition: color 0.5s ease;
+        }
+        #feedback-form label.dark-mode{
+            color: #eee;
+        }
+
+        #feedback-input {
+            padding: 10px;
+            width: 90%;
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s ease, background-color 0.5s ease, color 0.5s ease;
+            background-color: #fff;
+            color: #333;
+        }
+        #feedback-input.dark-mode{
+            background-color: #555;
+            color: #eee;
+            border-color: #777;
+        }
+
+        #feedback-input:focus {
+            outline: none;
+            border-color: #aac1da;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        #feedback-submit {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 10px;
+            width: 90%;
+            max-width: 320px;
+        }
+        #feedback-submit.dark-mode {
+            background-color: #ffdb58;
+            color: #111;
+        }
+
+        #feedback-submit:hover {
+            background-color: #0056b3;
+        }
+
+        #feedback-submit:active {
+            transform: scale(0.95);
+        }
+        #show-feedback-button{
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #17a2b8;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        #show-feedback-button.dark-mode{
+            background-color: #868e96;
+            color: #eee;
+        }
+        #show-feedback-button:hover{
+             background-color: #138496;
+        }
+         #show-feedback-button:active {
+            transform: scale(0.95);
+        }
+        #past-guesses-container{
+            margin-top: 20px;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            text-align: left;
+            width: 90%;
+            max-width: 320px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #past-guesses-container.show {
+            opacity: 1;
+            height: auto;
+        }
+        #past-guesses-header{
+            cursor: pointer;
+            padding: 10px;
+            background-color: #868e96;
+            color: #715ce4;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+        #past-guesses-header.dark-mode{
+             background-color: #343a40;
+             color: #fff;
+        }
+        #past-guesses-header:hover{
+            background-color: #3e81bb;
+        }
+
+        #past-guesses-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+            transition: background-color 0.5s ease;
+            background-color: #fff;
+        }
+        #past-guesses-list.dark-mode{
+            background-color: #444;
+            border-color: #666;
+        }
+
+        #past-guesses-list li{
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            transition: color 0.5s ease, border-color 0.5s ease;
+            color: #333;
+        }
+        #past-guesses-list li.dark-mode{
+             color: #eee;
+             border-color: #db4f4f;
+        }
+        #past-guesses-list li:last-child {
+            border-bottom: none;
+        }
+        #past-guesses-list li span{
+            font-weight: bold;
+        }
+        #past-guesses-list li span.dark-mode{
+            color: #ffdb58;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <button id="toggle-dark-mode">Toggle Dark Mode</button>
+        <h2>Number Guessing Game</h2>
+        <div class="difficulty-buttons">
+            <button class="difficulty-button" data-difficulty="easy">Easy</button>
+            <button class="difficulty-button" data-difficulty="medium">Medium</button>
+            <button class="difficulty-button" data-difficulty="hard">Hard</button>
+        </div>
+        <p>I'm thinking of a number between 1 and <span id="max-number">100</span>. Can you guess it?</p>
+        <p>You have <span id="attempts-left"></span> attempts left.</p>
+        <input type="number" id="guessInput" placeholder="Enter your guess">
+        <button id="checkGuessButton">Guess</button>
+        <p id="message"></p>
+        <button id="reset-button">Reset Game</button>
+        <button id="show-feedback-button">Send Feedback</button>
+        <div id="feedback-container">
+            <form id="feedback-form">
+                <label for="feedback-input">Your Feedback:</label>
+                <textarea id="feedback-input" name="feedback" rows="4" required></textarea>
+                <button id="feedback-submit" type="submit">Submit Feedback</button>
+            </form>
+        </div>
+        <div id="past-guesses-container">
+            <div id="past-guesses-header">Your Past Guesses <span id="past-guesses-count">(0)</span></div>
+            <ul id="past-guesses-list">
+            </ul>
+        </div>
+    </div>
+    <script>
+        let secretNumber = 0;
+        let attempts = 0;
+        let maxAttempts = 0;
+        let maxNumber = 100;
+        let gameActive = true;
+        let difficulty = 'medium';
+        const body = document.querySelector('body');
+        const gameContainer = document.getElementById('game-container');
+        const h2 = document.querySelector('h2');
+        const p = document.querySelector('p');
+        const input = document.querySelector('input');
+        const messageElement = document.getElementById("message");
+        const checkGuessButton = document.getElementById("checkGuessButton");
+        const resetButton = document.getElementById("reset-button");
+        const attemptsLeftDisplay = document.getElementById("attempts-left");
+        const maxNumberDisplay = document.getElementById("max-number");
+        const difficultyButtons = document.querySelectorAll('.difficulty-button');
+        const darkModeButton = document.getElementById('toggle-dark-mode');
+        const feedbackButton = document.getElementById('show-feedback-button');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackForm = document.getElementById('feedback-form');
+        const feedbackInput = document.getElementById('feedback-input');
+        const pastGuessesContainer = document.getElementById('past-guesses-container');
+        const pastGuessesHeader = document.getElementById('past-guesses-header');
+        const pastGuessesList = document.getElementById('past-guesses-list');
+        const pastGuessesCount = document.getElementById('past-guesses-count');
+        let pastGuesses = [];
+        let showPastGuesses = false;
+
+        function setDifficulty(selectedDifficulty) {
+            difficulty = selectedDifficulty;
+            difficultyButtons.forEach(button => {
+                button.classList.remove('selected');
+            });
+            const selectedButton = document.querySelector(`[data-difficulty="${selectedDifficulty}"]`);
+            selectedButton.classList.add('selected');
+
+            switch (difficulty) {
+                case 'easy':
+                    maxAttempts = 10;
+                    maxNumber = 50;
+                    break;
+                case 'medium':
+                    maxAttempts = 7;
+                    maxNumber = 100;
+                    break;
+                case 'hard':
+                    maxAttempts = 5;
+                    maxNumber = 100;
+                    break;
+            }
+            maxNumberDisplay.textContent = maxNumber;
+            resetGame();
+        }
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                setDifficulty(this.dataset.difficulty);
+            });
+        });
+
+        document.querySelector(`[data-difficulty="${difficulty}"]`).classList.add('selected');
+
+
+        function resetGame() {
+            secretNumber = Math.floor(Math.random() * maxNumber) + 1;
+            attempts = 0;
+            gameActive = true;
+            guessInput.disabled = false;
+            checkGuessButton.disabled = false;
+            messageElement.textContent = "";
+            messageElement.classList.remove('game-over');
+            resetButton.style.display = "none";
+            guessInput.value = "";
+            guessInput.focus();
+            attemptsLeftDisplay.textContent = maxAttempts;
+            attemptsLeftDisplay.style.color = "";
+            feedbackContainer.classList.remove('show');
+            pastGuesses = [];
+            pastGuessesList.innerHTML = "";
+            pastGuessesCount.textContent = "(0)";
+            pastGuessesContainer.classList.remove('show');
+            showPastGuesses = false;
+        }
+
+        function checkGuess() {
+            if (!gameActive) return;
+
+            const guess = parseInt(guessInput.value);
+            attempts++;
+            attemptsLeft = maxAttempts - attempts;
+            attemptsLeftDisplay.textContent = attemptsLeft;
+
+            if (attemptsLeft <= 2){
+                attemptsLeftDisplay.style.color = "red";
+            }
+            if (isNaN(guess) || guess < 1 || guess > maxNumber) {
+                messageElement.textContent = `Please enter a valid number between 1 and ${maxNumber}.`;
+            } else if (guess === secretNumber) {
+                messageElement.textContent = `Congratulations! You guessed the number ${secretNumber} in ${attempts} attempts.`;
+                guessInput.disabled = true;
+                checkGuessButton.disabled = true;
+                gameActive = false;
+                resetButton.style.display = "inline-block";
+            } else if (guess < secretNumber) {
+                messageElement.textContent = "Too low! Try again.";
+            } else {
+                messageElement.textContent = "Too high! Try again.";
+            }
+            pastGuesses.push({number: guess, result: messageElement.textContent});
+            pastGuessesCount.textContent = `(${pastGuesses.length})`;
+            if (showPastGuesses) {
+                updatePastGuessesList();
+            }
+
+            if (attempts >= maxAttempts) {
+                messageElement.textContent = `Game over! The number was ${secretNumber}.`;
+                messageElement.classList.add('game-over');
+                guessInput.disabled = true;
+                checkGuessButton.disabled = true;
+                gameActive = false;
+                resetButton.style.display = "inline-block";
+            }
+
+            guessInput.value = "";
+            guessInput.focus();
+        }
+
+        function updatePastGuessesList() {
+            pastGuessesList.innerHTML = "";
+            pastGuesses.forEach(guessData => {
+                const listItem = document.createElement("li");
+                listItem.innerHTML = `<span>${guessData.number}</span> - ${guessData.result}`;
+                pastGuessesList.appendChild(listItem);
+            });
+        }
+
+        checkGuessButton.addEventListener('click', checkGuess);
+        resetButton.addEventListener('click', resetGame);
+
+        // Initial setup
+        resetGame();
+
+        //Add Dark Mode
+        let darkMode = false;
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            body.classList.toggle('dark-mode', darkMode);
+            gameContainer.classList.toggle('dark-mode', darkMode);
+            h2.classList.toggle('dark-mode', darkMode);
+            p.classList.toggle('dark-mode', darkMode);
+            input.classList.toggle('dark-mode', darkMode);
+            messageElement.classList.toggle('dark-mode', darkMode);
+            difficultyButtons.forEach(button => {
+                button.classList.toggle('dark-mode', darkMode);
+                if (button.classList.contains('selected')){
+                     button.classList.toggle('dark-mode', darkMode);
+                }
+            });
+            resetButton.classList.toggle('dark-mode', darkMode);
+            darkModeButton.classList.toggle('dark-mode', darkMode);
+            feedbackForm.classList.toggle('dark-mode', darkMode);
+            pastGuessesList.classList.toggle('dark-mode', darkMode);
+            pastGuessesHeader.classList.toggle('dark-mode', darkMode);
+        }
+        darkModeButton.addEventListener('click', toggleDarkMode);
+
+        //Feedback form
+        feedbackButton.addEventListener('click', () => {
+            feedbackContainer.classList.toggle('show');
+            if (feedbackContainer.classList.contains('show')){
+                feedbackInput.focus();
+            }
+        });
+
+        feedbackForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const feedbackText = feedbackInput.value;
+            if (feedbackText.trim() !== "") {
+                alert(`Thank you for your feedback: ${feedbackText}`);
+                feedbackInput.value = "";
+                feedbackContainer.classList.remove('show');
+            } else {
+                alert("Please enter your feedback before submitting.");
+            }
+        });
+
+        // Past Guesses
+        pastGuessesHeader.addEventListener('click', () => {
+            pastGuessesContainer.classList.toggle('show');
+            showPastGuesses = !showPastGuesses;
+            if (showPastGuesses) {
+                updatePastGuessesList();
+            }
+        });
+    </script>
+    <div style="text-align:center; margin-top: 20px;">
+        <a class="btn btn-secondary btn-lg" href="index.html">Back to Home</a>
+    </div>
+</body>
+</html>
